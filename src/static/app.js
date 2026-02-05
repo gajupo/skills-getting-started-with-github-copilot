@@ -5,6 +5,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageDiv = document.getElementById("message");
 
   // Function to fetch activities from API
+  // Simple HTML-escape helper to keep inserted participant names safe
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  
   async function fetchActivities() {
     try {
       const response = await fetch("/activities");
@@ -20,11 +31,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        const participantsHtml = (details.participants && details.participants.length)
+          ? `<div class="participants"><strong>Participants:</strong><ul>${details.participants.map(p => `<li>${escapeHtml(p)}</li>`).join("")}</ul></div>`
+          : `<div class="participants"><strong>Participants:</strong><p class="no-participants">No participants yet.</p></div>`;
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsHtml}
         `;
 
         activitiesList.appendChild(activityCard);
